@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>极简 GPT 聊天测试</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #chat { margin-bottom: 10px; }
+    input { width: 80%; padding: 8px; }
+    button { padding: 8px; }
+    .user { color: blue; }
+    .gpt { color: green; }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+  <input type="text" id="message" placeholder="输入消息...">
+  <button onclick="sendMessage()">发送</button>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("message");
+      const content = input.value.trim();
+      if (!content) return;
+
+      const chatBox = document.getElementById("chat");
+      chatBox.innerHTML += `<div class="user">你：${content}</div>`;
+      input.value = "";
+
+      try {
+        const response = await fetch("http://152.32.186.184/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [{ role: "user", content: content }],
+            user_id: "test_user"
+          })
+        });
+
+        if (!response.ok) {
+          chatBox.innerHTML += `<div class="gpt">GPT：请求失败，状态码 ${response.status}</div>`;
+          return;
+        }
+
+        const data = await response.json();
+        chatBox.innerHTML += `<div class="gpt">GPT：${data.reply}</div>`;
+      } catch (error) {
+        chatBox.innerHTML += `<div class="gpt">GPT：发生错误：${error.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
