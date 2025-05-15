@@ -1,37 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>GPT 医疗机器人</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>医学 GPT 聊天机器人</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div id="chat-container"></div>
-  <div id="input-container">
-    <input type="text" id="message" placeholder="请输入医学相关问题...">
-    <button onclick="sendMessage()">发送</button>
-  </div>
-  <script src="/static/custom.js"></script>
-  <script>
-    // 加载历史记录
-    async function loadHistory() {
-      const chat = document.getElementById("chat-container");
-      chat.innerHTML = "";
-      try {
-        const res = await fetch("/api/history");
-        const data = await res.json();
-        (data.history || []).forEach(msg => {
-          const div = document.createElement("div");
-          div.className = "message " + (msg.role === "user" ? "user" : "gpt");
-          div.innerText = msg.content;
-          chat.appendChild(div);
-        });
-        chat.scrollTop = chat.scrollHeight;
-      } catch (e) {
-        chat.innerHTML = "<div>无法加载历史记录</div>";
-      }
-    }
-    window.onload = loadHistory;
-  </script>
+<div id="chat-container"></div>
+<div id="input-container">
+  <input type="text" id="message" placeholder="请输入消息..." autocomplete="off">
+  <button onclick="sendMessage()">发送</button>
+</div>
+<script src="/static/custom.js"></script>
 </body>
 </html>
