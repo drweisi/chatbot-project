@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, make_response, send_from_directory
+from flask import Flask, request, jsonify, render_template, make_response, send_from_directory, Response, stream_with_context
 import os
 import base64
 import time
@@ -135,6 +135,7 @@ def chat():
     message = data.get("message", "").strip()
     image_data = data.get("image")
     analyze_image = data.get("analyze_image", False)  # 用户是否请求图像分析
+    stream_response = data.get("stream", True)  # 默认启用流式响应
     
     # 从 Redis 获取历史记录
     user_id = request.cookies.get('user_id')
@@ -229,54 +230,123 @@ def chat():
     messages.append({"role": "user", "content": user_content})
     
     try:
-        # 调用 OpenAI API
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.5,
-            max_tokens=800
-        )
-        
-        # 获取助手回复
-        assistant_response = response.choices[0].message.content
-        
-        # 更新会话历史
-        # 保存用户消息到历史
-        if image_url:
-            conversation_history.append({
-                "role": "user", 
-                "content": [
-                    {"type": "text", "text": message if message else "请分析这张图片"},
-                    {"type": "image_url", "image_url": {"url": image_url}}
-                ]
-            })
+        # 根据请求选择是流式响应还是普通响应
+        if stream_response:
+            return stream_chat_response(messages, user_id, conversation_history, message, image_url)
         else:
-            conversation_history.append({
-                "role": "user", 
-                "content": message
-            })
-            
-        # 保存助手回复到历史
-        conversation_history.append({
-            "role": "assistant",
-            "content": assistant_response
-        })
-        
-        # 限制历史长度以节省 token 和内存
-        if len(conversation_history) > 10:
-            conversation_history = conversation_history[-10:]
-        
-        # 更新 Redis 中的会话状态
-        save_conversation_history(user_id, conversation_history)
-        
-        # 返回响应
-        return jsonify({
-            "response": assistant_response
-        })
-    
+            return normal_chat_response(messages, user_id, conversation_history, message, image_url)
     except Exception as e:
         print(f"OpenAI API 错误: {e}")
         return jsonify({"response": f"抱歉，发生了错误: {str(e)}"})
+
+def stream_chat_response(messages, user_id, conversation_history, message, image_url):
+    """处理流式响应"""
+    def generate():
+        full_response = ""
+        # 调用 OpenAI 流式 API
+        try:
+            stream = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                temperature=0.5,
+                stream=True  # 启用流式输出
+            )
+            
+            # 逐块发送流数据
+            for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    # 包装成 JSON 格式发送
+                    yield f"data: {json.dumps({'chunk': content})}\n\n"
+            
+            # 全部内容发送完毕，更新会话历史
+            if image_url:
+                conversation_history.append({
+                    "role": "user", 
+                    "content": [
+                        {"type": "text", "text": message if message else "请分析这张图片"},
+                        {"type": "image_url", "image_url": {"url": image_url}}
+                    ]
+                })
+            else:
+                conversation_history.append({
+                    "role": "user", 
+                    "content": message
+                })
+                
+            # 保存助手回复到历史
+            conversation_history.append({
+                "role": "assistant",
+                "content": full_response
+            })
+            
+            # 限制历史长度
+            if len(conversation_history) > 10:
+                conversation_history = conversation_history[-10:]
+            
+            # 更新 Redis 中的会话状态
+            save_conversation_history(user_id, conversation_history)
+            
+            # 发送完成信号
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            print(f"流式响应错误: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    
+    # 返回流式响应
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
+
+def normal_chat_response(messages, user_id, conversation_history, message, image_url):
+    """处理普通响应"""
+    # 调用 OpenAI API
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        temperature=0.5,
+        max_tokens=800
+    )
+    
+    # 获取助手回复
+    assistant_response = response.choices[0].message.content
+    
+    # 更新会话历史
+    # 保存用户消息到历史
+    if image_url:
+        conversation_history.append({
+            "role": "user", 
+            "content": [
+                {"type": "text", "text": message if message else "请分析这张图片"},
+                {"type": "image_url", "image_url": {"url": image_url}}
+            ]
+        })
+    else:
+        conversation_history.append({
+            "role": "user", 
+            "content": message
+        })
+        
+    # 保存助手回复到历史
+    conversation_history.append({
+        "role": "assistant",
+        "content": assistant_response
+    })
+    
+    # 限制历史长度以节省 token 和内存
+    if len(conversation_history) > 10:
+        conversation_history = conversation_history[-10:]
+    
+    # 更新 Redis 中的会话状态
+    save_conversation_history(user_id, conversation_history)
+    
+    # 返回响应
+    return jsonify({
+        "response": assistant_response
+    })
 
 @app.route("/api/clear", methods=["POST"])
 def clear_conversation():
