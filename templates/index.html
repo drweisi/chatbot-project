@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医疗助手</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .assistant {
+            background-color: #f1f0f0;
+            align-self: flex-start;
+        }
+        
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .selected-image {
+            position: relative;
+            margin-bottom: 10px;
+            width: 150px;
+            height: 150px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .selected-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .selected-image button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>医疗助手</h1>
+        <button id="clearBtn" class="btn btn-outline-light btn-sm">新对话</button>
+    </div>
+
+    <div class="chat-container">
+        <div id="chatMessages" class="chat-messages">
+            <div class="message assistant">
+                <p>您好！我是医学助手，可以帮您分析医学报告、医疗影像、药品信息等。请上传图片或输入您的问题。</p>
+                <p><small>注意：我提供的信息仅供参考，不构成医疗诊断。如有健康问题，请咨询专业医生。</small></p>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <div id="selectedImage" class="selected-image" style="display: none;">
+                <img id="previewImage" src="" alt="已选图片">
+                <button id="removeImage">×</button>
+            </div>
+            
+            <div class="input-area">
+                <textarea id="messageInput" placeholder="输入您的问题..." rows="1"></textarea>
+                
+                <div class="input-actions">
+                    <label for="imageInput" class="btn btn-outline-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image" viewBox="0 0 16 16">
+                            <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                            <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+                        </svg>
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    
+                    <button id="sendButton" class="btn btn-primary" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.5.5 0 0 1-.31.32.5.5 0 0 1-.38 0 .5.5 0 0 1-.306-.313l-3.16-7.9L.5 6.556a.5.5 0 0 1-.271-.578A.5.5 0 0 1 .768 5.7l15 6 .084.033a.5.5 0 0 1 .002.527z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><small>© 2023 医疗助手 | 本服务不提供医疗诊断，仅供参考</small></p>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">处理中...</span>
+        </div>
+        <p class="mt-2">正在分析您的信息...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const imageInput = document.getElementById('imageInput');
+            const selectedImage = document.getElementById('selectedImage');
+            const previewImage = document.getElementById('previewImage');
+            const removeImage = document.getElementById('removeImage');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            let currentImageData = null;
+
+            // 自动调整文本框高度
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                
+                // 启用/禁用发送按钮
+                sendButton.disabled = this.value.trim() === '' && !currentImageData;
+            });
+
+            // 图片选择处理
+            imageInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        currentImageData = event.target.result;
+                        previewImage.src = currentImageData;
+                        selectedImage.style.display = 'block';
+                        sendButton.disabled = false;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 移除选择的图片
+            removeImage.addEventListener('click', function() {
+                currentImageData = null;
+                previewImage.src = '';
+                selectedImage.style.display = 'none';
+                imageInput.value = '';
+                sendButton.disabled = messageInput.value.trim() === '';
+            });
+
+            // 发送消息
+            sendButton.addEventListener('click', sendMessage);
+            
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendButton.disabled) {
+                        sendMessage();
+                    }
+                }
+            });
+
+            // 清除对话
+            clearBtn.addEventListener('click', function() {
+                fetch('/api/clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 清空聊天界面，只保留欢迎信息
+                    chatMessages.innerHTML = `
+                        <div class="message assistant">
+                            <p>您好！我是医学助手，可以帮您分析医学报告、医疗影像、药品信息等。请上传图片或输入您的问题。</p>
+                            <p><small>注意：我提供的信息仅供参考，不构成医疗诊断。如有健康问题，请咨询专业医生。</small></p>
+                        </div>
+                    `;
+                    // 清除当前输入
+                    messageInput.value = '';
+                    currentImageData = null;
+                    previewImage.src = '';
+                    selectedImage.style.display = 'none';
+                    sendButton.disabled = true;
+                })
+                .catch(error => console.error('清除对话失败:', error));
+            });
+
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                
+                if (message === '' && !currentImageData) return;
+                
+                // 添加用户消息到聊天界面
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'message user';
+                userMessageElement.innerHTML = `<p>${message}</p>`;
+                if (currentImageData) {
+                    userMessageElement.innerHTML += `<img src="${currentImageData}" alt="用户图片" style="max-width: 100%; max-height: 200px; border-radius: 5px;">`;
+                }
+                chatMessages.appendChild(userMessageElement);
+                
+                // 滚动到最新消息
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // 显示加载状态
+                loadingOverlay.style.display = 'flex';
+                
+                // 准备发送的数据
+                const requestData = {
+                    message: message,
+                    image: currentImageData
+                };
+                
+                // 发送请求到服务器
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 隐藏加载状态
+                    loadingOverlay.style.display = 'none';
+                    
+                    // 添加助手回复到聊天界面
+                    const assistantMessageElement = document.createElement('div');
+                    assistantMessageElement.className = 'message assistant';
+                    
+                    // 处理换行符和Markdown格式
+                    const formattedResponse = data.response
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
+                    assistantMessageElement.innerHTML = `<p>${formattedResponse}</p>`;
+                    chatMessages.appendChild(assistantMessageElement);
+                    
+                    // 滚动到最新消息
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('发送消息失败:', error);
+                    loadingOverlay.style.display = 'none';
+                    
+                    // 添加错误消息
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'message assistant';
+                    errorMessageElement.innerHTML = `<p>抱歉，发生了错误。请稍后再试。</p>`;
+                    chatMessages.appendChild(errorMessageElement);
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+                
+                // 清空输入框和图片
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                currentImageData = null;
+                previewImage.src = '';
+                selectedImage.style.display = 'none';
+                sendButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
