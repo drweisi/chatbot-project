@@ -6,462 +6,672 @@
     <title>医疗助手</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 添加Markdown解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@5.1.2/marked.min.js"></script>
     <style>
-        :root {
-            --primary-color: #4e73df;
-            --secondary-color: #f8f9fc;
-            --accent-color: #224abe;
-            --text-color: #2e3848;
-            --light-text: #6c757d;
-            --border-color: #e3e6f0;
-            --user-msg-color: #d4e7ff;
-            --assistant-msg-color: #f0f2f7;
-            --header-height: 60px;
-            --footer-height: 50px;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .header {
-            height: var(--header-height);
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-        }
-        
-        .header-title {
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-        }
-        
-        .header-title i {
-            margin-right: 10px;
-            font-size: 1.3rem;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 1.3rem;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .main-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            padding: var(--header-height) 0 var(--footer-height) 0;
-            height: 100vh;
-            overflow: hidden;
+          :root {
+        --primary-color: #4e73df;
+        --secondary-color: #f8f9fc;
+        --accent-color: #224abe;
+        --text-color: #2e3848;
+        --light-text: #6c757d;
+        --border-color: #e3e6f0;
+        --user-msg-color: #d4e7ff;
+        --assistant-msg-color: #f0f2f7;
+        --header-height: 60px;
+        --footer-height: 50px;
+        --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .header {
+        height: var(--header-height);
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+    }
+    
+    .header-title i {
+        margin-right: 10px;
+        font-size: 1.3rem;
+    }
+    
+    .header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .main-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding: var(--header-height) 0 var(--footer-height) 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .chat-container {
+        max-width: 1000px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background-color: white;
+        box-shadow: var(--shadow);
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        scroll-behavior: smooth;
+    }
+    
+    .message {
+        margin-bottom: 20px;
+        max-width: 85%;
+        position: relative;
+        padding: 15px;
+        border-radius: 12px;
+        line-height: 1.6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .user {
+        background-color: var(--user-msg-color);
+        border-top-right-radius: 3px;
+        margin-left: auto;
+        padding-right: 20px;
+    }
+    
+    .user p {
+        margin-bottom: 0.7rem;
+        color: var(--text-color);
+    }
+    
+    .user p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .assistant {
+        background-color: var(--assistant-msg-color);
+        border-top-left-radius: 3px;
+        margin-right: auto;
+        padding-left: 20px;
+    }
+    
+    .message-time {
+        position: absolute;
+        bottom: -20px;
+        font-size: 0.75rem;
+        color: var(--light-text);
+    }
+    
+    .user .message-time {
+        right: 5px;
+    }
+    
+    .assistant .message-time {
+        left: 5px;
+    }
+    
+    .message img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        margin-top: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #eee;
+    }
+    
+    .input-wrapper {
+        padding: 15px;
+        background-color: white;
+        border-top: 1px solid var(--border-color);
+        position: relative;
+    }
+    
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        background-color: white;
+        border-radius: 18px;
+        box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 5px;
+    }
+    
+    .selected-image {
+        position: relative;
+        margin: 10px;
+        width: 120px;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .selected-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .selected-image button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.85);
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #555;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .input-area {
+        display: flex;
+        align-items: flex-end;
+        padding: 8px 10px;
+    }
+    
+    #messageInput {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 8px 10px;
+        resize: none;
+        max-height: 150px;
+        min-height: 40px;
+        font-size: 16px;
+        font-family: inherit;
+        background-color: transparent;
+    }
+    
+    .input-actions {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    
+    .btn-icon {
+        background-color: transparent;
+        border: none;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        color: var(--primary-color);
+    }
+    
+    .btn-icon:hover {
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+    
+    #sendButton {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    #sendButton:hover {
+        background-color: var(--accent-color);
+    }
+    
+    #sendButton:disabled {
+        background-color: #b4b4b4;
+        cursor: default;
+    }
+    
+    .footer {
+        height: var(--footer-height);
+        text-align: center;
+        padding: 15px;
+        background-color: white;
+        border-top: 1px solid var(--border-color);
+        color: var(--light-text);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(78, 115, 223, 0.2);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .typing-indicator {
+        padding: 10px 15px;
+        background-color: var(--assistant-msg-color);
+        border-radius: 12px;
+        display: inline-block;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        float: left;
+        margin: 0 1px;
+        background-color: #9E9EA1;
+        display: block;
+        border-radius: 50%;
+        opacity: 0.4;
+    }
+    
+    .typing-indicator span:nth-of-type(1) {
+        animation: 1s typing infinite;
+    }
+    
+    .typing-indicator span:nth-of-type(2) {
+        animation: 1s typing infinite 0.33s;
+    }
+    
+    .typing-indicator span:nth-of-type(3) {
+        animation: 1s typing infinite 0.66s;
+    }
+    
+    @keyframes typing {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    @media (max-width: 768px) {
+        .message {
+            max-width: 90%;
         }
         
         .chat-container {
-            max-width: 1000px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: white;
-            box-shadow: var(--shadow);
+            border-radius: 0;
+            box-shadow: none;
         }
-        
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            scroll-behavior: smooth;
-        }
-        
-        .message {
-            margin-bottom: 20px;
-            max-width: 85%;
-            position: relative;
-            padding: 15px;
-            border-radius: 12px;
-            line-height: 1.6;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        
-        .message p {
-            margin-bottom: 0.7rem;
-            color: var(--text-color);
-        }
-        
-        .message p:last-child {
-            margin-bottom: 0;
-        }
-        
-        .user {
-            background-color: var(--user-msg-color);
-            border-top-right-radius: 3px;
-            margin-left: auto;
-            padding-right: 20px;
-        }
-        
-        .assistant {
-            background-color: var(--assistant-msg-color);
-            border-top-left-radius: 3px;
-            margin-right: auto;
-            padding-left: 20px;
-        }
-        
-        .message-time {
-            position: absolute;
-            bottom: -20px;
-            font-size: 0.75rem;
-            color: var(--light-text);
-        }
-        
-        .user .message-time {
-            right: 5px;
-        }
-        
-        .assistant .message-time {
-            left: 5px;
-        }
-        
-        .message img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            margin-top: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border: 1px solid #eee;
-        }
-        
-        .input-wrapper {
-            padding: 15px;
-            background-color: white;
-            border-top: 1px solid var(--border-color);
-            position: relative;
-        }
-        
-        .input-container {
-            display: flex;
-            flex-direction: column;
-            background-color: white;
-            border-radius: 18px;
-            box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            padding: 5px;
-        }
-        
-        .selected-image {
-            position: relative;
-            margin: 10px;
-            width: 120px;
-            height: 120px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .selected-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .selected-image button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: rgba(255, 255, 255, 0.85);
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            color: #555;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-        
-        .input-area {
-            display: flex;
-            align-items: flex-end;
-            padding: 8px 10px;
-        }
-        
-        #messageInput {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 8px 10px;
-            resize: none;
-            max-height: 150px;
-            min-height: 40px;
-            font-size: 16px;
-            font-family: inherit;
-            background-color: transparent;
-        }
-        
-        .input-actions {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-        
-        .btn-icon {
-            background-color: transparent;
-            border: none;
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            color: var(--primary-color);
-        }
-        
-        .btn-icon:hover {
-            background-color: rgba(78, 115, 223, 0.1);
-        }
-        
-        #sendButton {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        #sendButton:hover {
-            background-color: var(--accent-color);
-        }
-        
-        #sendButton:disabled {
-            background-color: #b4b4b4;
-            cursor: default;
-        }
-        
-        .footer {
-            height: var(--footer-height);
-            text-align: center;
-            padding: 15px;
-            background-color: white;
-            border-top: 1px solid var(--border-color);
-            color: var(--light-text);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(2px);
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(78, 115, 223, 0.2);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .typing-indicator {
-            padding: 10px 15px;
-            background-color: var(--assistant-msg-color);
-            border-radius: 12px;
-            display: inline-block;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .typing-indicator span {
-            height: 8px;
-            width: 8px;
-            float: left;
-            margin: 0 1px;
-            background-color: #9E9EA1;
-            display: block;
-            border-radius: 50%;
-            opacity: 0.4;
-        }
-        
-        .typing-indicator span:nth-of-type(1) {
-            animation: 1s typing infinite;
-        }
-        
-        .typing-indicator span:nth-of-type(2) {
-            animation: 1s typing infinite 0.33s;
-        }
-        
-        .typing-indicator span:nth-of-type(3) {
-            animation: 1s typing infinite 0.66s;
-        }
-        
-        @keyframes typing {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @media (max-width: 768px) {
-            .message {
-                max-width: 90%;
-            }
-            
-            .chat-container {
-                border-radius: 0;
-                box-shadow: none;
-            }
-        }
-
-        /* 代码块样式 */
-        pre {
-            background-color: #f7f7f9;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9em;
-            margin: 10px 0;
-            border-left: 3px solid var(--primary-color);
-        }
-
-        /* 表格样式 */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        
-        th {
-            background-color: #f2f2f2;
-        }
-        
-        /* 链接样式 */
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        a:hover {
-            text-decoration: underline;
-        }
-        
-        /* 标记强调 */
-        mark {
-            background-color: rgba(78, 115, 223, 0.2);
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-        
-        /* 提示卡样式 */
-        .info-card {
-            background-color: #e8f4fd;
-            border-left: 4px solid #2196F3;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        
-        .warning-card {
-            background-color: #fff8e1;
-            border-left: 4px solid #ffc107;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        
-        /* 新功能按钮样式 */
-        .feature-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .feature-button {
-            background-color: white;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-color);
-        }
-        
-        .feature-button:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .feature-button i {
-            font-size: 0.8rem;
-        }
-
-        /* 调整图片上传图标的大小 */
-        .input-actions .fas.fa-image {
-            font-size: 24px; /* 修改这个数值来调整图标大小 */
-        }
+    }
+    
+    /* Markdown样式 - 新增 */
+    .message.assistant h2 {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+        color: #2e3848;
+    }
+    
+    /* 助手消息中的段落样式 */
+    .message.assistant p {
+        margin-bottom: 1rem !important;
+        line-height: 1.6 !important;
+    }
+    
+    /* Markdown引用样式 */
+    .message.assistant blockquote {
+        background-color: #e8f4fd;
+        border-left: 4px solid #2196F3;
+        padding: 12px !important;
+        margin: 1rem 0 !important;
+        border-radius: 4px;
+    }
+    
+    /* 警告引用样式 */
+    .message.assistant blockquote.warning {
+        background-color: #fff8e1;
+        border-left: 4px solid #ffc107;
+    }
+    
+    /* 列表样式 */
+    .message.assistant ul, 
+    .message.assistant ol {
+        margin: 0.5rem 0 1rem 1.5rem !important;
+        padding-left: 0 !important;
+    }
+    
+    .message.assistant li {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* 表格样式 */
+    .message.assistant table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 !important;
+        overflow-x: auto;
+        display: block;
+    }
+    
+    .message.assistant th,
+    .message.assistant td {
+        padding: 8px 12px !important;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    
+    .message.assistant th {
+        background-color: #f2f4f7;
+        font-weight: 600;
+    }
+    
+    /* 代码块样式 */
+    .message.assistant pre {
+        background-color: #f7f7f9;
+        padding: 12px !important;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 1rem 0 !important;
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .message.assistant code {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9em;
+        color: #333;
+    }
+    
+    /* 分隔线样式 */
+    .message.assistant hr {
+        border: 0;
+        border-top: 1px solid #e3e6f0;
+        margin: 2rem 0 1rem 0 !important;
+    }
+    
+    /* 链接样式 */
+    .message.assistant a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .message.assistant a:hover {
+        text-decoration: underline;
+    }
+    
+    /* 特殊文本样式 */
+    .message.assistant strong {
+        font-weight: 600 !important;
+    }
+    
+    .message.assistant em {
+        font-style: italic !important;
+    }
+    
+    /* 代码块样式 */
+    pre {
+        background-color: #f7f7f9;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9em;
+        margin: 10px 0;
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    /* 表格样式 */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+    
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+    
+    th {
+        background-color: #f2f2f2;
+    }
+    
+    /* 链接样式 */
+    a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    a:hover {
+        text-decoration: underline;
+    }
+    
+    /* 标记强调 */
+    mark {
+        background-color: rgba(78, 115, 223, 0.2);
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+    
+    /* 新功能按钮样式 */
+    .feature-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .feature-button {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--text-color);
+    }
+    
+    .feature-button:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .feature-button i {
+        font-size: 0.8rem;
+    }
+    
+    /* 调整图片上传图标的大小 */
+    .input-actions .fas.fa-image {
+        font-size: 24px;
+    }
+    
+    /* 图片优化状态指示器 */
+    .image-progress {
+        width: 100%;
+        height: 3px;
+        background-color: #f0f0f0;
+        border-radius: 3px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+    
+    .image-progress-bar {
+        height: 100%;
+        background-color: var(--primary-color);
+        border-radius: 3px;
+        transition: width 0.3s;
+    }
+    
+    .image-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--light-text);
+        margin-top: 5px;
+    }
+    
+    .optimization-result {
+        background-color: rgba(78, 115, 223, 0.1);
+        border-radius: 5px;
+        padding: 8px 12px;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+    
+    .optimization-result .check-icon {
+        color: #4CAF50;
+        margin-right: 5px;
+    }
+    
+    .optimization-result .details {
+        margin-top: 3px;
+        margin-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 12px;
+        color: var(--light-text);
+    }
+    
+    /* 拖放区域样式 */
+    .drag-over {
+        border: 2px dashed var(--primary-color) !important;
+        background-color: rgba(78, 115, 223, 0.05) !important;
+    }
+    
+    /* 临时提示消息 */
+    .temp-message {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        animation: fadeIn 0.3s, fadeOut 0.3s 4.7s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translate(-50%, 20px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translate(-50%, 0); }
+        to { opacity: 0; transform: translate(-50%, -20px); }
+    }
+    
+    /* 相机提示 */
+    .camera-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        z-index: 10;
+    }
+    
+    /* 状态指示容器 */
+    #uploadStatus {
+        margin: 5px 10px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* 处理指示器 */
+    #processingIndicator {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(78, 115, 223, 0.2);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s linear infinite;
+    }
+    
+    /* 优化信息容器 */
+    #optimizationInfo {
+        margin: 5px 10px;
+        display: none;
+    }
 
     </style>
 </head>
 <body>
+    <!-- HTML内容保持不变，仅更新CSS样式 -->
     <div class="header">
         <div class="header-title">
             <i class="fas fa-heartbeat"></i>
@@ -474,7 +684,6 @@
             <button id="clearBtn" class="btn btn-outline-light btn-sm">新对话</button>
         </div>
     </div>
-
     <div class="main-container">
         <div class="chat-container">
             <div id="chatMessages" class="chat-messages">
@@ -507,6 +716,14 @@
                         <button id="removeImage" title="移除图片">×</button>
                     </div>
                     
+                    <!-- 添加图片处理状态和优化信息 -->
+                    <div id="uploadStatus">
+                        <div id="processingIndicator"></div>
+                        <span id="statusMessage">正在处理图片...</span>
+                    </div>
+                    
+                    <div id="optimizationInfo"></div>
+                    
                     <div class="input-area">
                         <textarea id="messageInput" placeholder="输入您的问题..." rows="1"></textarea>
                         
@@ -529,13 +746,852 @@
     <div class="footer">
         <p><small>© <span id="currentYear"></span> 医疗助手 | 本服务不提供医疗诊断，仅供参考</small></p>
     </div>
-
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
         <p class="mt-3">正在思考中...</p>
     </div>
 
     <script>
+        /**
+         * 渐进式图片处理主类
+         * 提供智能图片处理功能，包括:
+         * 1. 快速低分辨率预览生成
+         * 2. 高质量优化处理
+         * 3. 自动并行处理策略
+         */
+        class ProgressiveImageProcessor {
+          constructor(options = {}) {
+            // 默认配置
+            this.config = {
+              lowResMaxWidth: 600,        // 低分辨率版本的最大宽度
+              highResMaxWidth: 1200,      // 高分辨率版本的最大宽度
+              lowResQuality: 0.6,         // 低分辨率版本的质量 (0-1)
+              highResQuality: 0.85,       // 高分辨率版本的质量 (0-1)
+              smallImageThreshold: 1024 * 1024, // 小图阈值 (1MB)
+              skipProcessingThreshold: 300 * 1024, // 小于此值不进行处理 (300KB)
+              timeout: 15000,             // 处理超时时间 (15秒)
+              ...options
+            };
+
+            // 处理状态
+            this.processing = false;
+            this.abortController = null;
+            
+            // 缓存已处理图片
+            this.imageCache = new Map();
+          }
+
+          /**
+           * 处理图片文件的主入口函数
+           * @param {File} file - 用户选择的图片文件
+           * @param {Function} onProgress - 进度回调函数 (percent, stage)
+           * @returns {Promise<Object>} 包含低分辨率和高分辨率图片的处理结果
+           */
+          async processImage(file, onProgress = () => {}) {
+            if (this.processing) {
+              throw new Error('另一个图片正在处理中');
+            }
+
+            try {
+              this.processing = true;
+              this.abortController = new AbortController();
+              const signal = this.abortController.signal;
+
+              // 自动超时处理
+              const timeoutId = setTimeout(() => {
+                this.abortController.abort();
+              }, this.config.timeout);
+
+              // 生成文件的唯一ID (使用文件名、大小和修改时间的组合)
+              const fileId = `${file.name}-${file.size}-${file.lastModified}`;
+              
+              // 检查缓存
+              if (this.imageCache.has(fileId)) {
+                onProgress(100, '从缓存加载');
+                clearTimeout(timeoutId);
+                return this.imageCache.get(fileId);
+              }
+
+              // 初始图像分析
+              onProgress(5, '分析图片');
+              const imageInfo = await this.analyzeImage(file);
+              
+              // 判断是否需要处理
+              const needsProcessing = this.needsProcessing(file, imageInfo);
+              if (!needsProcessing) {
+                onProgress(100, '图片已优化');
+                const result = {
+                  original: file,
+                  lowRes: file,
+                  highRes: file,
+                  originalSize: file.size,
+                  optimizedSize: file.size,
+                  dimensions: imageInfo,
+                  processedDimensions: imageInfo,
+                  compressionRatio: 0,
+                  processingTime: 0,
+                  needsHighRes: false
+                };
+                
+                this.imageCache.set(fileId, result);
+                clearTimeout(timeoutId);
+                return result;
+              }
+
+              // 开始计时
+              const startTime = performance.now();
+              
+              // 并行处理低分辨率和高分辨率版本
+              onProgress(20, '创建预览');
+              
+              // 创建低分辨率版本任务
+              const lowResPromise = this.createLowResVersion(file, signal)
+                .then(lowRes => {
+                  onProgress(50, '预览准备完成');
+                  return lowRes;
+                });
+              
+              // 同时创建高分辨率版本任务
+              const highResPromise = this.createHighResVersion(file, signal)
+                .then(highRes => {
+                  onProgress(80, '优化完成');
+                  return highRes;
+                });
+              
+              // 等待低分辨率版本完成
+              const lowRes = await lowResPromise;
+              
+              // 继续等待高分辨率版本完成
+              const highRes = await highResPromise;
+              
+              // 计算压缩率和处理时间
+              const endTime = performance.now();
+              const processingTime = endTime - startTime;
+              const compressionRatio = (1 - highRes.size / file.size) * 100;
+              
+              onProgress(100, '处理完成');
+              
+              // 构建结果对象
+              const result = {
+                original: file,
+                lowRes,
+                highRes,
+                originalSize: file.size,
+                optimizedSize: highRes.size,
+                dimensions: imageInfo,
+                processedDimensions: { 
+                  width: imageInfo.width * (this.config.highResMaxWidth / Math.max(imageInfo.width, this.config.highResMaxWidth)),
+                  height: imageInfo.height * (this.config.highResMaxWidth / Math.max(imageInfo.width, this.config.highResMaxWidth))
+                },
+                compressionRatio,
+                processingTime,
+                needsHighRes: compressionRatio > 30 || imageInfo.width > 1500
+              };
+              
+              // 缓存结果
+              this.imageCache.set(fileId, result);
+              
+              clearTimeout(timeoutId);
+              return result;
+            } catch (error) {
+              if (error.name === 'AbortError') {
+                throw new Error('图片处理超时，请尝试较小的图片');
+              }
+              throw error;
+            } finally {
+              this.processing = false;
+              this.abortController = null;
+            }
+          }
+
+          /**
+           * 取消当前处理
+           */
+          cancelProcessing() {
+            if (this.abortController) {
+              this.abortController.abort();
+            }
+          }
+
+          /**
+           * 分析图像获取基本信息
+           * @param {File} file - 图像文件
+           * @returns {Promise<Object>} 图像信息
+           */
+          async analyzeImage(file) {
+            return new Promise((resolve, reject) => {
+              const img = new Image();
+              const objectUrl = URL.createObjectURL(file);
+              
+              img.onload = () => {
+                const info = {
+                  width: img.width,
+                  height: img.height,
+                  aspectRatio: img.width / img.height,
+                  isWide: img.width > img.height,
+                  isLarge: file.size > this.config.smallImageThreshold,
+                  format: file.type.split('/')[1]?.toUpperCase() || 'UNKNOWN'
+                };
+                URL.revokeObjectURL(objectUrl);
+                resolve(info);
+              };
+              
+              img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('图像加载失败'));
+              };
+              
+              img.src = objectUrl;
+            });
+          }
+
+          /**
+           * 决定是否需要处理图片
+           * @param {File} file - 图像文件
+           * @param {Object} imageInfo - 图像信息
+           * @returns {Boolean} 是否需要处理
+           */
+          needsProcessing(file, imageInfo) {
+            // 文件太小，不处理
+            if (file.size < this.config.skipProcessingThreshold) {
+              return false;
+            }
+            
+            // 尺寸小于目标尺寸，且文件体积合理，不处理
+            if (imageInfo.width <= this.config.highResMaxWidth && 
+                imageInfo.height <= this.config.highResMaxWidth && 
+                file.size < this.config.smallImageThreshold) {
+              return false;
+            }
+            
+            return true;
+          }
+
+          /**
+           * 创建低分辨率版本，用于快速预览和初步分析
+           * @param {File} file - 图像文件 
+           * @param {AbortSignal} signal - 中止信号
+           * @returns {Promise<File>} 低分辨率图像文件
+           */
+          async createLowResVersion(file, signal) {
+            return this.resizeImage(file, {
+              maxWidth: this.config.lowResMaxWidth,
+              quality: this.config.lowResQuality,
+              signal
+            });
+          }
+
+          /**
+           * 创建高质量优化版本
+           * @param {File} file - 图像文件
+           * @param {AbortSignal} signal - 中止信号
+           * @returns {Promise<File>} 高质量优化图像文件
+           */
+          async createHighResVersion(file, signal) {
+            return this.resizeImage(file, {
+              maxWidth: this.config.highResMaxWidth,
+              quality: this.config.highResQuality,
+              signal
+            });
+          }
+
+          /**
+           * 调整图像尺寸和质量
+           * @param {File} file - 图像文件
+           * @param {Object} options - 调整选项
+           * @returns {Promise<File>} 处理后的图像文件
+           */
+          async resizeImage(file, options) {
+            const { maxWidth, quality, signal } = options;
+            
+            return new Promise((resolve, reject) => {
+              // 检查中止信号
+              if (signal && signal.aborted) {
+                return reject(new Error('操作已取消'));
+              }
+              
+              // 添加中止处理
+              if (signal) {
+                signal.addEventListener('abort', () => {
+                  reject(new Error('操作已取消'));
+                });
+              }
+              
+              const reader = new FileReader();
+              
+              reader.onload = (event) => {
+                const img = new Image();
+                
+                img.onload = () => {
+                  // 计算新尺寸，保持宽高比
+                  const { width, height } = this._calculateDimensions(img, maxWidth);
+                  
+                  // 创建Canvas进行绘制
+                  const canvas = document.createElement('canvas');
+                  canvas.width = width;
+                  canvas.height = height;
+                  
+                  // 使用高质量绘制模式
+                  const ctx = canvas.getContext('2d', { alpha: false });
+                  ctx.imageSmoothingEnabled = true;
+                  ctx.imageSmoothingQuality = 'high';
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // 确定输出格式
+                  let outputType = file.type;
+                  if (!outputType.startsWith('image/')) {
+                    outputType = 'image/jpeg';
+                  }
+                  
+                  // 转换为Blob
+                  canvas.toBlob((blob) => {
+                    if (!blob) {
+                      return reject(new Error('图像处理失败'));
+                    }
+                    
+                    // 创建新的File对象，保留原文件名和类型
+                    const processedFile = new File([blob], file.name, {
+                      type: outputType,
+                      lastModified: Date.now()
+                    });
+                    
+                    resolve(processedFile);
+                  }, outputType, quality);
+                };
+                
+                img.onerror = () => {
+                  reject(new Error('图像加载失败'));
+                };
+                
+                img.src = event.target.result;
+              };
+              
+              reader.onerror = () => {
+                reject(new Error('文件读取失败'));
+              };
+              
+              reader.readAsDataURL(file);
+            });
+          }
+
+          /**
+           * 计算保持宽高比的新尺寸
+           * @param {Image} img - 图像元素
+           * @param {Number} maxWidth - 最大宽度
+           * @returns {Object} 新尺寸 {width, height}
+           */
+          _calculateDimensions(img, maxWidth) {
+            const { width: originalWidth, height: originalHeight } = img;
+            
+            // 如果图像已经小于最大宽度，保持原尺寸
+            if (originalWidth <= maxWidth) {
+              return { width: originalWidth, height: originalHeight };
+            }
+            
+            // 计算调整后的高度，保持宽高比
+            const aspectRatio = originalWidth / originalHeight;
+            const height = Math.round(maxWidth / aspectRatio);
+            
+            return { width: maxWidth, height };
+          }
+
+          /**
+           * 清除缓存
+           */
+          clearCache() {
+            this.imageCache.clear();
+          }
+        }
+
+        /**
+         * 图片上传管理类
+         * 处理图片选择、预览和上传
+         */
+        class ImageUploadManager {
+          /**
+           * 构造函数
+           * @param {Object} options - 配置选项
+           */
+          constructor(options = {}) {
+            // 默认配置
+            this.config = {
+              fileInputId: 'imageInput',                // 文件输入框ID
+              previewContainerId: 'selectedImage',      // 预览容器ID
+              previewImageId: 'previewImage',           // 预览图片ID
+              removeButtonId: 'removeImage',            // 移除按钮ID
+              messageInputId: 'messageInput',           // 消息输入框ID
+              sendButtonId: 'sendButton',               // 发送按钮ID
+              statusContainerId: 'uploadStatus',        // 状态容器ID
+              statusMessageId: 'statusMessage',         // 状态消息ID
+              optimizationInfoId: 'optimizationInfo',   // 优化信息ID
+              processingIndicatorId: 'processingIndicator', // 处理指示器ID
+              imageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], // 支持的图片类型
+              maxFileSize: 10 * 1024 * 1024,            // 最大文件大小 (10MB)
+              ...options
+            };
+            
+            // 初始化图像处理器
+            this.imageProcessor = new ProgressiveImageProcessor({
+              lowResMaxWidth: 600,
+              highResMaxWidth: 1200
+            });
+            
+            // 保存当前处理的图像数据
+            this.currentImageData = null;
+            this.originalFile = null;
+            
+            // 首次使用指引状态
+            this.firstTimeGuideShown = localStorage.getItem('uploadInstructionShown') === 'true';
+            
+            // DOM元素
+            this.elements = {
+              fileInput: document.getElementById(this.config.fileInputId),
+              previewContainer: document.getElementById(this.config.previewContainerId),
+              previewImage: document.getElementById(this.config.previewImageId),
+              removeButton: document.getElementById(this.config.removeButtonId),
+              messageInput: document.getElementById(this.config.messageInputId),
+              sendButton: document.getElementById(this.config.sendButtonId),
+              statusContainer: document.getElementById(this.config.statusContainerId),
+              statusMessage: document.getElementById(this.config.statusMessageId),
+              optimizationInfo: document.getElementById(this.config.optimizationInfoId),
+              processingIndicator: document.getElementById(this.config.processingIndicatorId)
+            };
+            
+            // 初始化
+            this.init();
+          }
+
+          /**
+           * 初始化上传管理器
+           */
+          init() {
+            // 文件选择处理
+            this.elements.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+            
+            // 移除图片处理
+            this.elements.removeButton.addEventListener('click', this.removeImage.bind(this));
+            
+            // 显示首次使用指引
+            //if (!this.firstTimeGuideShown) {
+            //  this.showFirstTimeUserGuide();
+            //}
+            
+            // 增强拖放支持
+            this.setupDragAndDrop();
+            
+            // 增强移动端体验
+            this.enhanceMobileExperience();
+          }
+
+          /**
+           * 处理文件选择
+           * @param {Event} event - 文件选择事件
+           */
+          async handleFileSelect(event) {
+            try {
+              const files = event.target.files;
+              if (!files || files.length === 0) return;
+              
+              const file = files[0]; // 仅处理第一个文件
+              
+              // 验证文件类型
+              if (!this.config.imageTypes.includes(file.type)) {
+                this.showError('请选择有效的图片文件 (JPEG, PNG, GIF, WEBP)');
+                return;
+              }
+              
+              // 验证文件大小
+              if (file.size > this.config.maxFileSize) {
+                this.showError(`图片大小不能超过 ${this.config.maxFileSize / (1024 * 1024)}MB`);
+                return;
+              }
+              
+              // 保存原始文件
+              this.originalFile = file;
+              
+              // 显示处理状态
+              this.showProcessingState('正在优化图片...');
+              
+              // 处理图片文件
+              const result = await this.imageProcessor.processImage(file, 
+                (percent, stage) => this.updateProgressStatus(percent, stage));
+              
+              // 使用低分辨率版本显示预览
+              const lowResUrl = URL.createObjectURL(result.lowRes);
+              this.elements.previewImage.src = lowResUrl;
+              this.elements.previewContainer.style.display = 'block';
+              
+              // 保存处理后的图像数据
+              this.currentImageData = {
+                lowRes: result.lowRes,
+                highRes: result.highRes,
+                originalSize: result.originalSize,
+                optimizedSize: result.optimizedSize,
+                needsHighRes: result.needsHighRes,
+                dimensions: result.dimensions,
+                processedDimensions: result.processedDimensions,
+                compressionRatio: result.compressionRatio,
+                urls: {
+                  lowRes: lowResUrl,
+                  highRes: URL.createObjectURL(result.highRes)
+                }
+              };
+              
+              // 启用发送按钮
+              this.enableSendButton();
+              
+              // 显示优化信息
+              this.hideProcessingState();
+              this.showOptimizationInfo(result);
+              
+              // 检测图像质量并显示反馈
+              this.provideSmartFeedback(result);
+            } catch (error) {
+              console.error('处理图片时出错:', error);
+              this.showError(`处理图片时出错: ${error.message}`);
+              this.hideProcessingState();
+              
+              // 清除选择
+              this.elements.fileInput.value = '';
+              this.removeImage();
+            }
+          }
+
+          /**
+           * 移除图片
+           */
+          removeImage() {
+            // 清除当前图像数据
+            if (this.currentImageData) {
+              // 释放对象URL
+              URL.revokeObjectURL(this.currentImageData.urls.lowRes);
+              URL.revokeObjectURL(this.currentImageData.urls.highRes);
+              this.currentImageData = null;
+            }
+            
+            // 清除预览
+            this.elements.previewImage.src = '';
+            this.elements.previewContainer.style.display = 'none';
+            this.elements.fileInput.value = '';
+            this.originalFile = null;
+            
+            // 清除状态信息
+            this.hideProcessingState();
+            this.hideOptimizationInfo();
+            
+            // 更新发送按钮状态
+            this.updateSendButtonState();
+          }
+
+          /**
+           * 显示处理状态
+           * @param {String} message - 状态消息
+           */
+          showProcessingState(message) {
+            this.elements.statusContainer.style.display = 'flex';
+            this.elements.processingIndicator.style.display = 'block';
+            this.elements.statusMessage.textContent = message || '正在处理图片...';
+          }
+
+          /**
+           * 隐藏处理状态
+           */
+          hideProcessingState() {
+            this.elements.statusContainer.style.display = 'none';
+          }
+
+          /**
+           * 更新进度状态
+           * @param {Number} percent - 完成百分比
+           * @param {String} stage - 当前阶段
+           */
+          updateProgressStatus(percent, stage) {
+            this.showProcessingState(`${stage} (${Math.round(percent)}%)`);
+          }
+
+          /**
+           * 显示优化信息
+           * @param {Object} result - 图片处理结果
+           */
+          showOptimizationInfo(result) {
+            if (!this.elements.optimizationInfo) return;
+            
+            const { originalSize, optimizedSize, compressionRatio, processedDimensions } = result;
+            
+            if (compressionRatio > 5) {
+              this.elements.optimizationInfo.innerHTML = `
+                <div class="optimization-result">
+                  <span class="check-icon">✓</span> 图片已自动优化
+                  <div class="details">
+                    <span>尺寸调整为: ${processedDimensions.width.toFixed(0)} x ${processedDimensions.height.toFixed(0)}px</span>
+                    <span>减小了 ${compressionRatio.toFixed(0)}% 的体积</span>
+                  </div>
+                </div>
+              `;
+              this.elements.optimizationInfo.style.display = 'block';
+            } else {
+              this.hideOptimizationInfo();
+            }
+          }
+
+          /**
+           * 隐藏优化信息
+           */
+          hideOptimizationInfo() {
+            if (this.elements.optimizationInfo) {
+              this.elements.optimizationInfo.style.display = 'none';
+            }
+          }
+
+          /**
+           * 显示错误消息
+           * @param {String} message - 错误消息
+           */
+          showError(message) {
+            alert(message);
+          }
+
+          /**
+           * 显示临时消息
+           * @param {String} message - 消息内容
+           * @param {Number} duration - 显示时间(毫秒)
+           */
+          showTemporaryMessage(message, duration = 5000) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'temp-message';
+            messageElement.textContent = message;
+            
+            document.body.appendChild(messageElement);
+            
+            // 自动移除
+            setTimeout(() => {
+              document.body.removeChild(messageElement);
+            }, duration);
+          }
+
+          /**
+           * 根据图片分析结果提供智能反馈
+           * @param {Object} result - 图片处理结果
+           */
+          provideSmartFeedback(result) {
+            // 如果图片过大 (>5MB)
+            if (result.originalSize > 5 * 1024 * 1024) {
+              this.showTemporaryMessage('图片已自动优化以提高处理速度和准确性');
+            }
+            
+            // 如果图片分辨率过低
+            if (result.dimensions.width < 400 || result.dimensions.height < 400) {
+              this.showTemporaryMessage('图片分辨率较低，可能影响分析细节');
+            }
+          }
+
+          /**
+           * 启用发送按钮
+           */
+          enableSendButton() {
+            this.elements.sendButton.disabled = false;
+          }
+
+          /**
+           * 更新发送按钮状态
+           */
+          updateSendButtonState() {
+            const hasText = this.elements.messageInput && 
+                          this.elements.messageInput.value.trim() !== '';
+            const hasImage = !!this.currentImageData;
+            
+            if (this.elements.sendButton) {
+              this.elements.sendButton.disabled = !hasText && !hasImage;
+            }
+          }
+
+          /**
+           * 设置拖放功能
+           */
+          setupDragAndDrop() {
+            const dropZone = document.querySelector('.input-container');
+            if (!dropZone) return;
+            
+            // 阻止默认拖放行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+              dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+              }, false);
+            });
+            
+            // 添加视觉反馈
+            ['dragenter', 'dragover'].forEach(eventName => {
+              dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('drag-over');
+              }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+              dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('drag-over');
+              }, false);
+            });
+            
+            // 处理放下的文件
+            dropZone.addEventListener('drop', e => {
+              const files = e.dataTransfer.files;
+              if (files && files.length) {
+                // 模拟文件输入更改事件
+                this.elements.fileInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                this.elements.fileInput.dispatchEvent(event);
+              }
+            }, false);
+          }
+
+          /**
+           * 增强移动端体验
+           */
+          enhanceMobileExperience() {
+            // 检测是否支持相机API
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+              // 增强相机按钮体验
+              const cameraButton = document.querySelector('label[for="imageInput"]');
+              if (cameraButton) {
+                cameraButton.style.position = 'relative';
+                
+                // 添加提示气泡
+                const tooltip = document.createElement('div');
+                tooltip.className = 'camera-tooltip';
+                tooltip.textContent = '拍摄或选择照片';
+                tooltip.innerHTML += `
+                  <div style="
+                    position: absolute;
+                    bottom: -5px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 0;
+                    height: 0;
+                    border-left: 5px solid transparent;
+                    border-right: 5px solid transparent;
+                    border-top: 5px solid rgba(0, 0, 0, 0.7);
+                  "></div>
+                `;
+                
+                cameraButton.appendChild(tooltip);
+                
+                // 显示/隐藏提示
+                cameraButton.addEventListener('mouseenter', () => {
+                  tooltip.style.opacity = '1';
+                });
+                
+                cameraButton.addEventListener('mouseleave', () => {
+                  tooltip.style.opacity = '0';
+                });
+                
+                // 移动端触摸支持
+                cameraButton.addEventListener('touchstart', () => {
+                  tooltip.style.opacity = '1';
+                  setTimeout(() => {
+                    tooltip.style.opacity = '0';
+                  }, 1500);
+                });
+              }
+            }
+          }
+
+          /**
+           * 显示首次使用指引
+           */
+          showFirstTimeUserGuide() {
+            const guide = document.createElement('div');
+            guide.className = 'first-time-guide';
+            guide.innerHTML = `
+              <div class="guide-content">
+                <h3>✨ 图片上传小贴士</h3>
+                <p>您可以直接上传手机拍摄的照片，系统会自动优化以提高处理速度。</p>
+                <p>为获得最佳结果，请确保:</p>
+                <ul>
+                  <li>照片光线充足，不模糊</li>
+                  <li>尽量对准需要分析的区域</li>
+                  <li>对于文字内容，确保文字清晰可见</li>
+                </ul>
+                <button id="got-it-btn" class="btn btn-primary">知道了</button>
+              </div>
+            `;
+            
+            // 添加样式
+            guide.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: rgba(0, 0, 0, 0.5);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 2000;
+            `;
+            
+            // 内容样式
+            const guideContent = guide.querySelector('.guide-content');
+            guideContent.style.cssText = `
+              background-color: white;
+              padding: 20px;
+              border-radius: 10px;
+              max-width: 90%;
+              width: 400px;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            `;
+            
+            document.body.appendChild(guide);
+            
+            document.getElementById('got-it-btn').onclick = () => {
+              guide.style.display = 'none';
+              localStorage.setItem('uploadInstructionShown', 'true');
+            };
+          }
+
+          /**
+           * 获取当前图像数据，用于发送到服务器
+           * @param {Boolean} useHighRes - 是否使用高分辨率版本
+           * @returns {Promise<String>} 图像的base64数据
+           */
+          async getCurrentImageData(useHighRes = false) {
+            if (!this.currentImageData) return null;
+            
+            // 根据需求选择低分辨率或高分辨率版本
+            const version = useHighRes && this.currentImageData.needsHighRes ? 
+              this.currentImageData.highRes : this.currentImageData.lowRes;
+            
+            // 转换File对象为base64字符串
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(version);
+            });
+          }
+
+          /**
+           * 使用高分辨率版本进行分析
+           * @returns {Promise<String>} 高分辨率图像的base64数据
+           */
+          async getHighResolutionData() {
+            if (!this.currentImageData || !this.currentImageData.needsHighRes) {
+              // 如果不需要高分辨率，则返回当前使用的版本
+              return this.getCurrentImageData(false);
+            }
+            
+            return this.getCurrentImageData(true);
+          }
+          
+          /**
+           * 清除所有缓存和当前数据
+           */
+          reset() {
+            this.removeImage();
+            this.imageProcessor.clearCache();
+          }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const chatMessages = document.getElementById('chatMessages');
             const messageInput = document.getElementById('messageInput');
@@ -549,13 +1605,16 @@
             const themeToggle = document.getElementById('themeToggle');
             const featureButtons = document.querySelectorAll('.feature-button');
             
+            // 初始化图片上传管理器
+            const imageUploadManager = new ImageUploadManager();
+            window.imageUploadManager = imageUploadManager; // 全局可访问
+            
             // 设置当前年份和时间
             document.getElementById('currentYear').textContent = new Date().getFullYear();
             document.querySelectorAll('.current-time').forEach(el => {
                 el.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             });
             
-            let currentImageData = null;
             let darkMode = localStorage.getItem('darkMode') === 'enabled';
             
             // 初始化主题
@@ -584,41 +1643,15 @@
                 this.style.height = (this.scrollHeight) + 'px';
                 
                 // 启用/禁用发送按钮
-                sendButton.disabled = this.value.trim() === '' && !currentImageData;
+                updateSendButtonState();
             });
-
-            // 图片选择处理
-            imageInput.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    
-                    // 检查文件大小
-                    if (file.size > 10 * 1024 * 1024) { // 10MB限制
-                        alert('图片大小不能超过10MB');
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(event) {
-                        currentImageData = event.target.result;
-                        previewImage.src = currentImageData;
-                        selectedImage.style.display = 'block';
-                        sendButton.disabled = false;
-                    };
-                    
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // 移除选择的图片
-            removeImage.addEventListener('click', function() {
-                currentImageData = null;
-                previewImage.src = '';
-                selectedImage.style.display = 'none';
-                imageInput.value = '';
-                sendButton.disabled = messageInput.value.trim() === '';
-            });
+            
+            // 更新发送按钮状态
+            function updateSendButtonState() {
+                const hasText = messageInput.value.trim() !== '';
+                const hasImage = !!imageUploadManager.currentImageData;
+                sendButton.disabled = !hasText && !hasImage;
+            }
 
             // 发送消息
             sendButton.addEventListener('click', sendMessage);
@@ -639,7 +1672,7 @@
                     messageInput.value = text;
                     messageInput.style.height = 'auto';
                     messageInput.style.height = (messageInput.scrollHeight) + 'px';
-                    sendButton.disabled = false;
+                    updateSendButtonState();
                     
                     // 自动聚焦并滚动到输入框
                     messageInput.focus();
@@ -690,7 +1723,7 @@
                             messageInput.value = text;
                             messageInput.style.height = 'auto';
                             messageInput.style.height = (messageInput.scrollHeight) + 'px';
-                            sendButton.disabled = false;
+                            updateSendButtonState();
                             messageInput.focus();
                         });
                     });
@@ -698,18 +1731,18 @@
                     // 清除当前输入
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
-                    currentImageData = null;
-                    previewImage.src = '';
-                    selectedImage.style.display = 'none';
-                    sendButton.disabled = true;
+                    imageUploadManager.removeImage();
+                    updateSendButtonState();
                 })
                 .catch(error => console.error('清除对话失败:', error));
             });
 
-            function sendMessage() {
+            // 发送消息
+            async function sendMessage() {
                 const message = messageInput.value.trim();
                 
-                if (message === '' && !currentImageData) return;
+                // 确保至少有消息或图片之一
+                if (message === '' && !imageUploadManager.currentImageData) return;
                 
                 // 获取当前时间
                 const now = new Date();
@@ -722,11 +1755,19 @@
                 // 处理文本中的换行
                 const formattedMessage = message.replace(/\n/g, '<br>');
                 
-                userMessageElement.innerHTML = `<p>${formattedMessage}</p>`;
-                if (currentImageData) {
-                    userMessageElement.innerHTML += `<img src="${currentImageData}" alt="用户图片">`;
+                let messageContent = '';
+                if (message) {
+                    messageContent += `<p>${formattedMessage}</p>`;
                 }
-                userMessageElement.innerHTML += `<div class="message-time">今天 ${timeString}</div>`;
+                
+                // 获取优化后的低分辨率图片数据进行显示
+                let imageData = null;
+                if (imageUploadManager.currentImageData) {
+                    imageData = await imageUploadManager.getCurrentImageData(false);
+                    messageContent += `<img src="${imageData}" alt="用户图片">`;
+                }
+                
+                userMessageElement.innerHTML = messageContent + `<div class="message-time">今天 ${timeString}</div>`;
                 chatMessages.appendChild(userMessageElement);
                 
                 // 添加"正在输入"指示器
@@ -746,20 +1787,20 @@
                 loadingOverlay.style.display = 'flex';
                 
                 // 准备发送的数据
-                const requestData = {
-                    message: message,
-                    image: currentImageData,
-                    stream: true // 启用流式响应
-                };
+                let requestData = { stream: true };
+                
+                if (message) {
+                    requestData.message = message;
+                }
+                
+                if (imageData) {
+                    requestData.image = imageData;
+                    requestData.optimized = true; // 标记这是优化后的图片
+                }
                 
                 // 创建助手消息元素
                 const assistantMessageElement = document.createElement('div');
                 assistantMessageElement.className = 'message assistant';
-                
-                // 创建内容元素
-                const contentElement = document.createElement('div');
-                contentElement.className = 'content-container';
-                assistantMessageElement.appendChild(contentElement);
                 
                 // 添加时间标记
                 const timeElement = document.createElement('div');
@@ -767,171 +1808,199 @@
                 timeElement.textContent = '今天 ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 assistantMessageElement.appendChild(timeElement);
                 
+                console.log("发送请求数据:", {
+                    hasMessage: !!requestData.message,
+                    hasImage: !!requestData.image,
+                    imageLength: requestData.image ? requestData.image.length : 0,
+                    optimized: requestData.optimized
+                });
+                
                 // 发送请求到服务器
                 fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
                 })
-                .then(response => {
+                .then(async response => {
+                    // 记录响应状态
+                    console.log("收到响应状态:", response.status, response.statusText);
+                    console.log("响应头:", Array.from(response.headers.entries()));
+                    
                     // 隐藏加载状态和移除输入指示器
                     loadingOverlay.style.display = 'none';
-                    chatMessages.removeChild(typingIndicator);
+                    if (chatMessages.contains(typingIndicator)) {
+                        chatMessages.removeChild(typingIndicator);
+                    }
                     
                     // 添加助手消息元素到聊天窗口
                     chatMessages.appendChild(assistantMessageElement);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                     
-                    // 处理流式响应
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-                    let fullResponse = '';
-                    let buffer = '';
-                    let inCodeBlock = false;
-                    let codeLanguage = '';
-                    let inTable = false;
-                    let tableContent = '';
-                    
-                    function processStream() {
-                        reader.read().then(({ done, value }) => {
-                            if (done) {
-                                return;
-                            }
-                            
-                            // 解码二进制数据为文本
-                            const chunk = decoder.decode(value, { stream: true });
-                            // 处理服务器发送的事件
-                            const lines = chunk.split('\n\n');
-                            
-                            for (const line of lines) {
-                                if (line.startsWith('data:')) {
-                                    try {
-                                        const data = JSON.parse(line.substring(5).trim());
-                                        
-                                        if (data.chunk) {
-                                            const char = data.chunk;
-                                            fullResponse += char;
-                                            buffer += char;
-                                            
-                                            // 检测代码块开始
-                                            if (buffer.endsWith('```') && !inCodeBlock) {
-                                                inCodeBlock = true;
-                                                codeLanguage = '';
-                                                buffer = '';
-                                            }
-                                            // 检测代码块语言
-                                            else if (inCodeBlock && buffer.includes('\n') && codeLanguage === '') {
-                                                codeLanguage = buffer.substring(0, buffer.indexOf('\n')).trim();
-                                                buffer = buffer.substring(buffer.indexOf('\n') + 1);
-                                            }
-                                            // 检测代码块结束
-                                            else if (buffer.endsWith('```') && inCodeBlock) {
-                                                inCodeBlock = false;
-                                                const codeContent = buffer.substring(0, buffer.length - 3);
-                                                fullResponse = fullResponse.substring(0, fullResponse.length - buffer.length) + 
-                                                             `<pre><code>${codeContent}</code></pre>`;
-                                                buffer = '';
-                                            }
-                                            
-                                            // 检测表格开始和内容
-                                            if (char === '|' && !inTable && buffer.includes('\n') && 
-                                                buffer.split('\n').filter(line => line.trim().startsWith('|')).length >= 2) {
-                                                inTable = true;
-                                                tableContent = buffer.substring(buffer.lastIndexOf('\n', buffer.length - 2) + 1);
-                                                buffer = buffer.substring(0, buffer.lastIndexOf('\n', buffer.length - 2) + 1);
-                                            }
-                                            else if (inTable) {
-                                                tableContent += char;
-                                                if (buffer.endsWith('\n\n')) {
-                                                    // 表格结束，处理表格
-                                                    const tableRows = tableContent.trim().split('\n');
-                                                    if (tableRows.length >= 3) { // 至少有表头、分隔行和数据行
-                                                        const headerCells = tableRows[0].split('|').map(h => h.trim()).filter(h => h);
-                                                        
-                                                        let tableHtml = '<table><thead><tr>';
-                                                        headerCells.forEach(header => {
-                                                            tableHtml += `<th>${header}</th>`;
-                                                        });
-                                                        tableHtml += '</tr></thead><tbody>';
-                                                        
-                                                        for (let i = 2; i < tableRows.length; i++) {
-                                                            const cells = tableRows[i].split('|').map(c => c.trim()).filter(c => c);
-                                                            tableHtml += '<tr>';
-                                                            cells.forEach(cell => {
-                                                                tableHtml += `<td>${cell}</td>`;
-                                                            });
-                                                            tableHtml += '</tr>';
-                                                        }
-                                                        
-                                                        tableHtml += '</tbody></table>';
-                                                        fullResponse = fullResponse.substring(0, fullResponse.length - tableContent.length) + tableHtml;
-                                                    }
-                                                    inTable = false;
-                                                    tableContent = '';
-                                                }
-                                            }
-                                            
-                                            // 应用格式化
-                                            let formattedText = fullResponse;
-                                            if (!inCodeBlock && !inTable) {
-                                                formattedText = formattedText
-                                                    // 粗体
-                                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                                    // 斜体
-                                                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                                    // 下划线
-                                                    .replace(/__(.*?)__/g, '<u>$1</u>')
-                                                    // 链接
-                                                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
-                                                    // 列表项 (需要连续处理)
-                                                    .replace(/^\s*(\d+\.|\*|\-)\s+(.*?)$/gm, '<li>$2</li>')
-                                                    // 段落
-                                                    .replace(/\n\s*\n/g, '</p><p>')
-                                                    // 单个换行
-                                                    .replace(/\n/g, '<br>');
-                                            }
-                                            
-                                            // 确保内容被包装在段落标签中
-                                            if (!formattedText.startsWith('<')) {
-                                                formattedText = '<p>' + formattedText + '</p>';
-                                            }
-                                            
-                                            // 更新内容
-                                            contentElement.innerHTML = formattedText;
-                                            
-                                            // 保持滚动到底部
-                                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                                        }
-                                        
-                                        // 检查是否完成
-                                        if (data.done) {
-                                            console.log('流式响应完成');
-                                            return;
-                                        }
-                                        
-                                        // 检查错误
-                                        if (data.error) {
-                                            contentElement.innerHTML = '<p>抱歉，发生了错误: ' + data.error + '</p>';
-                                            return;
-                                        }
-                                    } catch (e) {
-                                        console.error('解析数据错误:', e, line);
-                                    }
-                                }
-                            }
-                            
-                            // 继续处理流
-                            processStream();
-                        }).catch(err => {
-                            console.error('读取流错误:', err);
-                            if (!contentElement.innerHTML) {
-                                contentElement.innerHTML = '<p>读取响应时出错，请重试。</p>';
-                            }
-                        });
+                    // 检查响应状态
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
                     }
                     
-                    // 开始处理流
-                    processStream();
+                    // 检查是否是流式响应
+                    const contentType = response.headers.get('Content-Type') || '';
+                    
+                    if (contentType.includes('text/event-stream')) {
+                        // 处理流式响应...
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let fullResponse = '';
+                        
+                        function processStream() {
+                            reader.read().then(({ done, value }) => {
+                                if (done) {
+                                    // 检查是否需要使用高分辨率版本
+                                    if (fullResponse.includes('需要更高清晰度') && 
+                                        imageUploadManager.currentImageData && 
+                                        imageUploadManager.currentImageData.needsHighRes) {
+                                        sendHighResolutionImage();
+                                    }
+                                    
+                                    return;
+                                }
+                                
+                                // 解码二进制数据为文本
+                                const chunk = decoder.decode(value, { stream: true });
+                                console.log("收到流式数据块:", chunk.length);
+                                
+                                // 处理服务器发送的事件
+                                const lines = chunk.split('\n\n');
+                                
+                                for (const line of lines) {
+                                    if (line.startsWith('data:')) {
+                                        try {
+                                            const data = JSON.parse(line.substring(5).trim());
+                                            
+                                            if (data.chunk) {
+                                                const char = data.chunk;
+                                                fullResponse += char;
+                                                
+                                                // 使用marked解析Markdown为HTML
+                                                // 设置marked选项，同时解决警告问题
+                                                marked.setOptions({
+                                                    renderer: new marked.Renderer(),
+                                                    gfm: true,
+                                                    tables: true,
+                                                    breaks: true,
+                                                    pedantic: false,
+                                                    sanitize: false, // 不对HTML进行过滤
+                                                    smartLists: true,
+                                                    smartypants: false,
+                                                    mangle: false,  // 解决mangle警告
+                                                    headerIds: false // 解决headerIds警告
+                                                });
+                                                
+                                                // 解析Markdown为HTML
+                                                const parsedHTML = marked.parse(fullResponse);
+                                                
+                                                // 更新内容 - 保留时间标记
+                                                const timeEl = assistantMessageElement.querySelector('.message-time');
+                                                assistantMessageElement.innerHTML = parsedHTML;
+                                                assistantMessageElement.appendChild(timeEl);
+                                                
+                                                // 增强表格样式
+                                                enhanceTables(assistantMessageElement);
+                                                
+                                                // 保持滚动到底部
+                                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                                            }
+                                            
+                                            // 检查是否完成
+                                            if (data.done) {
+                                                console.log('流式响应完成');
+                                                return;
+                                            }
+                                            
+                                            // 检查是否需要高清版本
+                                            if (data.needsHigherResolution) {
+                                                console.log("服务器请求更高清晰度图像");
+                                            }
+                                            
+                                            // 检查错误
+                                            if (data.error) {
+                                                const timeEl = assistantMessageElement.querySelector('.message-time');
+                                                assistantMessageElement.innerHTML = '<p>抱歉，发生了错误: ' + data.error + '</p>';
+                                                assistantMessageElement.appendChild(timeEl);
+                                                return;
+                                            }
+                                        } catch (e) {
+                                            console.error('解析数据错误:', e, line);
+                                        }
+                                    }
+                                }
+                                
+                                // 继续处理流
+                                processStream();
+                            }).catch(err => {
+                                console.error('读取流错误:', err);
+                                if (assistantMessageElement.innerHTML === '' || 
+                                    (assistantMessageElement.innerHTML === timeElement.outerHTML)) {
+                                    const timeEl = assistantMessageElement.querySelector('.message-time');
+                                    assistantMessageElement.innerHTML = '<p>读取响应时出错，请重试。</p>';
+                                    assistantMessageElement.appendChild(timeEl);
+                                }
+                            });
+                        }
+                        
+                        // 开始处理流
+                        processStream();
+                    } else {
+                        // 处理非流式JSON响应
+                        return response.json().then(data => {
+                            console.log("收到JSON响应:", data);
+                            
+                            if (data.error) {
+                                // 设置内容，保留时间标记
+                                const timeEl = assistantMessageElement.querySelector('.message-time');
+                                assistantMessageElement.innerHTML = `<p>抱歉，发生了错误: ${data.error}</p>`;
+                                assistantMessageElement.appendChild(timeEl);
+                            } else if (data.response) {
+                                // 使用marked解析Markdown
+                                // 设置marked选项，解决警告
+                                marked.setOptions({
+                                    renderer: new marked.Renderer(),
+                                    gfm: true,
+                                    tables: true,
+                                    breaks: true,
+                                    pedantic: false,
+                                    sanitize: false,
+                                    smartLists: true,
+                                    smartypants: false,
+                                    mangle: false,
+                                    headerIds: false
+                                });
+                                
+                                const parsedHTML = marked.parse(data.response);
+                                
+                                // 设置内容，保留时间标记
+                                const timeEl = assistantMessageElement.querySelector('.message-time');
+                                assistantMessageElement.innerHTML = parsedHTML;
+                                assistantMessageElement.appendChild(timeEl);
+                                
+                                // 增强表格样式
+                                enhanceTables(assistantMessageElement);
+                                
+                                // 检查是否需要高分辨率版本
+                                if (data.needsHigherResolution && 
+                                    imageUploadManager.currentImageData && 
+                                    imageUploadManager.currentImageData.needsHighRes) {
+                                    sendHighResolutionImage();
+                                }
+                            } else {
+                                // 设置空响应消息，保留时间标记
+                                const timeEl = assistantMessageElement.querySelector('.message-time');
+                                assistantMessageElement.innerHTML = '<p>收到一个空的响应，请重试。</p>';
+                                assistantMessageElement.appendChild(timeEl);
+                            }
+                            
+                            // 滚动到底部
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        });
+                    }
                 })
                 .catch(error => {
                     console.error('发送消息失败:', error);
@@ -943,19 +2012,123 @@
                     // 添加错误消息
                     const errorMessageElement = document.createElement('div');
                     errorMessageElement.className = 'message assistant';
-                    errorMessageElement.innerHTML = `<p>抱歉，发生了错误。请稍后再试。</p><div class="message-time">今天 ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
+                    errorMessageElement.innerHTML = `<p>抱歉，发生了错误: ${error.message}。请稍后再试。</p><div class="message-time">今天 ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
                     chatMessages.appendChild(errorMessageElement);
                     
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .finally(() => {
+                    // 清空输入框和图片
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    imageUploadManager.removeImage();
+                    updateSendButtonState();
+                    
+                    // 确保加载状态已关闭
+                    loadingOverlay.style.display = 'none';
                 });
-                
-                // 清空输入框和图片
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-                currentImageData = null;
-                previewImage.src = '';
-                selectedImage.style.display = 'none';
-                sendButton.disabled = true;
+            }
+            
+            // 增强表格样式
+            function enhanceTables(messageElement) {
+                const tables = messageElement.querySelectorAll('table');
+                tables.forEach(table => {
+                    // 添加表格容器，如果不存在
+                    if (!table.parentElement.classList.contains('table-container')) {
+                        const tableContainer = document.createElement('div');
+                        tableContainer.className = 'table-container';
+                        table.parentNode.insertBefore(tableContainer, table);
+                        tableContainer.appendChild(table);
+                    }
+                });
+            }
+            
+            // 发送高分辨率图像进行进一步分析
+            async function sendHighResolutionImage() {
+                try {
+                    // 如果没有高分辨率图像可用，则返回
+                    if (!imageUploadManager.currentImageData || !imageUploadManager.currentImageData.needsHighRes) {
+                        return;
+                    }
+                    
+                    console.log("正在发送高分辨率图像以获取更详细的分析...");
+                    
+                    // 添加提示信息
+                    const highResPrompt = document.createElement('div');
+                    highResPrompt.className = 'temp-message';
+                    highResPrompt.textContent = "正在使用高分辨率图像提供更精确的分析...";
+                    document.body.appendChild(highResPrompt);
+                    
+                    // 获取高分辨率图像数据
+                    const highResImageData = await imageUploadManager.getHighResolutionData();
+                    
+                    // 显示加载状态
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.querySelector('p').textContent = "正在进行细节分析...";
+                    
+                    // 准备请求数据
+                    const requestData = {
+                        image: highResImageData,
+                        isHighRes: true,
+                        previousAnalysis: true,
+                        stream: true
+                    };
+                    
+                    // 发送高分辨率请求
+                    const response = await fetch('/api/analyze-detail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    // 处理响应...
+                    if (!response.ok) {
+                        throw new Error(`高分辨率分析请求失败: ${response.status}`);
+                    }
+                    
+                    // 读取响应数据
+                    const data = await response.json();
+                    console.log("高分辨率分析结果:", data);
+                    
+                    // 添加高分辨率分析结果到聊天中
+                    if (data.additionalDetails) {
+                        const detailedMessageElement = document.createElement('div');
+                        detailedMessageElement.className = 'message assistant';
+                        
+                        // 使用marked解析Markdown，解决警告问题
+                        marked.setOptions({
+                            renderer: new marked.Renderer(),
+                            gfm: true,
+                            tables: true,
+                            breaks: true,
+                            pedantic: false,
+                            sanitize: false,
+                            smartLists: true,
+                            smartypants: false,
+                            mangle: false,
+                            headerIds: false
+                        });
+                        
+                        const formattedDetails = marked.parse(
+                            "## 🔍 高分辨率分析补充\n\n" + data.additionalDetails
+                        );
+                        
+                        detailedMessageElement.innerHTML = formattedDetails + 
+                            `<div class="message-time">今天 ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
+                        
+                        chatMessages.appendChild(detailedMessageElement);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                } catch (error) {
+                    console.error('高分辨率分析失败:', error);
+                } finally {
+                    // 移除临时提示
+                    const tempMessages = document.querySelectorAll('.temp-message');
+                    tempMessages.forEach(msg => document.body.removeChild(msg));
+                    
+                    // 隐藏加载状态
+                    loadingOverlay.style.display = 'none';
+                }
             }
             
             // 深色模式支持
