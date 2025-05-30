@@ -155,7 +155,7 @@ class StreamResponseManager:
         
         try:
             stream = self.openai_client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4o-mini",
                 messages=msg_copy,
                 temperature=0.5,
                 stream=True
@@ -217,7 +217,7 @@ def stream_chat_response(messages, user_id, conversation_history, message, image
 def normal_chat_response(messages, user_id, conversation_history, message, image_urls):
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=messages,
             temperature=0.5,
             max_tokens=800
